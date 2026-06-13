@@ -1,0 +1,49 @@
+import { API_URL } from '@/lib/config';
+import { getToken } from '@/lib/token';
+
+type RequestOptions = {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  auth?: boolean;
+};
+
+export async function apiRequest<T = any>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const token = options.auth === false ? null : await getToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    method: options.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  });
+
+  let payload: any = null;
+  try {
+    payload = await response.json();
+  } catch (_error) {}
+
+  if (!response.ok) {
+    const message = payload?.message || 'Request failed';
+    const error = new Error(message) as Error & { status?: number; data?: any };
+    error.status = response.status;
+    error.data = payload;
+    throw error;
+  }
+
+  return payload;
+}
+
+export const Api = {
+  get: <T = any>(path: string, auth = true) => apiRequest<T>(path, { method: 'GET', auth }),
+  post: <T = any>(path: string, body?: unknown, auth = true) =>
+    apiRequest<T>(path, { method: 'POST', body, auth }),
+  put: <T = any>(path: string, body?: unknown, auth = true) =>
+    apiRequest<T>(path, { method: 'PUT', body, auth }),
+  patch: <T = any>(path: string, body?: unknown, auth = true) =>
+    apiRequest<T>(path, { method: 'PATCH', body, auth }),
+  delete: <T = any>(path: string, auth = true) => apiRequest<T>(path, { method: 'DELETE', auth }),
+};
