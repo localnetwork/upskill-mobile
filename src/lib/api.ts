@@ -1,17 +1,38 @@
 import { API_URL } from '@/lib/config';
-import { getToken } from '@/lib/token';
+import { clearToken, getToken } from '@/lib/token';
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   auth?: boolean;
+  optionalAuth?: boolean;
 };
+
+type UnauthorizedHandler = () => void | Promise<void>;
+
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
+  unauthorizedHandler = handler;
+}
+
+function shouldAutoLogout(status: number, payload: any, auth: boolean) {
+  if (!auth || status !== 401) return false;
+  const message = String(payload?.message || payload?.error || '').toLowerCase();
+  return (
+    !message ||
+    message.includes('expired') ||
+    message.includes('invalid') ||
+    message.includes('unauthorized')
+  );
+}
 
 export async function apiRequest<T = any>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const token = options.auth === false ? null : await getToken();
+  const auth = options.auth !== false;
+  const token = auth || options.optionalAuth ? await getToken() : null;
   const response = await fetch(`${API_URL}${path}`, {
     method: options.method || 'GET',
     headers: {
@@ -24,9 +45,15 @@ export async function apiRequest<T = any>(
   let payload: any = null;
   try {
     payload = await response.json();
-  } catch (_error) {}
+  } catch {}
 
   if (!response.ok) {
+    if (shouldAutoLogout(response.status, payload, auth)) {
+      await clearToken();
+      if (unauthorizedHandler) {
+        await unauthorizedHandler();
+      }
+    }
     const message = payload?.message || 'Request failed';
     const error = new Error(message) as Error & { status?: number; data?: any };
     error.status = response.status;

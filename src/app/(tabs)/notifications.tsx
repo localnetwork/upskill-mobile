@@ -1,10 +1,8 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
-import { Colors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Api } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { getToken } from '@/lib/token';
@@ -18,8 +16,6 @@ type Notification = {
 };
 
 export default function NotificationsScreen() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const profile = useSessionStore((state) => state.profile);
   const [rows, setRows] = useState<Notification[]>([]);
   const [error, setError] = useState('');
@@ -71,17 +67,17 @@ export default function NotificationsScreen() {
   }, [profile?.id, socketBaseUrl, load]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
+    <View className="flex-1 p-4 bg-background">
+      {error ? <Text className="text-danger">{error}</Text> : null}
       <FlatList
         data={rows}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ gap: 8 }}
         renderItem={({ item }) => (
-          <View style={[styles.item, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-            <Text style={{ color: colors.textSecondary }}>{item.message}</Text>
-            <Text style={{ color: colors.textSecondary, marginTop: 4 }}>
+          <View className="rounded-xl p-4 bg-surface">
+            <Text className="font-bold text-[16px] mb-1 text-text">{item.title}</Text>
+            <Text className="text-text-secondary">{item.message}</Text>
+            <Text className="text-text-secondary mt-1">
               {item.readAt ? 'Read' : 'Unread'}
             </Text>
           </View>
@@ -90,22 +86,3 @@ export default function NotificationsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: Spacing.three,
-  },
-  list: {
-    gap: Spacing.two,
-  },
-  item: {
-    borderRadius: 12,
-    padding: Spacing.three,
-  },
-  title: {
-    fontWeight: '700',
-    fontSize: 16,
-    marginBottom: 4,
-  },
-});

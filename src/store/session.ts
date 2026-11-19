@@ -1,23 +1,26 @@
 import { create } from 'zustand';
 
-import { Api } from '@/lib/api';
+import { Api, setUnauthorizedHandler } from '@/lib/api';
 import { clearToken, getToken, setToken } from '@/lib/token';
 
 type Profile = {
   id: string;
   username?: string;
   email?: string;
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   roles?: string[];
 };
 
 type SessionState = {
   initialized: boolean;
+  guestMode: boolean;
   token: string | null;
   profile: Profile | null;
+  enterGuestMode: () => void;
   hydrate: () => Promise<void>;
-  login: (identifier: string, password: string) => Promise<void>;
+  login: (identifier: string) => Promise<{ email: string; maskedEmail: string } | null>;
+  verifyLoginCode: (email: string, code: string) => Promise<void>;
+  completeLogin: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -25,23 +28,30 @@ type SessionState = {
 function normalizeProfile(input: any): Profile | null {
   if (!input || typeof input !== 'object') return null;
   const roles = Array.isArray(input.roles)
-    ? input.roles.map((role: any) => String(role?.name || role?.role_name || role))
+    ? Array.from(
+        new Set(
+          input.roles
+            .map((role: any) => String(role?.name || role?.role_name || role || '').toUpperCase())
+            .filter(Boolean),
+        ),
+      )
     : [];
   return {
     id: String(input.id || ''),
     username: input.username || '',
     email: input.email || '',
-    firstName: input.firstName || input.firstname || '',
-    lastName: input.lastName || input.lastname || '',
+    fullName: input.fullName || '',
     roles,
   };
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   initialized: false,
+  guestMode: false,
   token: null,
   profile: null,
 
+  enterGuestMode: () => set({ guestMode: true }),
   hydrate: async () => {
     const token = await getToken();
     if (!token) {
@@ -51,7 +61,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ token });
     try {
       await get().refreshProfile();
-    } catch (_error) {
+    } catch {
       await clearToken();
       set({ token: null, profile: null });
     } finally {
@@ -59,12 +69,28 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  login: async (identifier, password) => {
+  login: async (identifier) => {
     const payload = identifier.includes('@')
-      ? { email: identifier, password }
-      : { username: identifier, password };
+      ? { email: identifier }
+      : { username: identifier };
     const result = await Api.post<any>('/auth/login', payload, false);
     const data = result?.data || result;
+    if (data?.requires_email_code) {
+      return { email: String(data.email), maskedEmail: String(data.masked_email || data.email) };
+    }
+    if (data?.requires_2fa) {
+      throw new Error('Two-factor authentication is not supported in the app yet.');
+    }
+    await get().completeLogin(data);
+    return null;
+  },
+
+  verifyLoginCode: async (email, code) => {
+    const result = await Api.post<any>('/auth/login/verify', { email, code }, false);
+    await get().completeLogin(result?.data || result);
+  },
+
+  completeLogin: async (data) => {
     const accessToken = data?.accessToken || data?.token || null;
     if (!accessToken) {
       throw new Error('Login failed');
@@ -76,7 +102,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   logout: async () => {
     await clearToken();
-    set({ token: null, profile: null });
+      set({ token: null, profile: null, guestMode: false });
   },
 
   refreshProfile: async () => {
@@ -85,3 +111,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ profile: normalized });
   },
 }));
+
+setUnauthorizedHandler(() => {
+  useSessionStore.setState({ token: null, profile: null, initialized: true });
+});
