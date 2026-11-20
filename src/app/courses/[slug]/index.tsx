@@ -1,11 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Image, Linking, Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppModal } from "@/components/app-modal";
-import { WEB_URL } from "@/lib/config";
 import {
   addCourseToCart,
   fetchCourseRoute,
@@ -125,7 +124,7 @@ export default function CourseDetailScreen() {
 
   const continueLearning = () => {
     if (!course) return;
-    Linking.openURL(`${WEB_URL}/courses/${encodeURIComponent(course.slug)}/learn`);
+    router.push(`/courses/${course.slug}/learn` as any);
   };
 
   const price = course?.price_tier?.price;

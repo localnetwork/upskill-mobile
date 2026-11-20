@@ -4,6 +4,8 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PLACEHOLDER_COVER } from '@/components/home-feed';
+import { CertificatesList, WishlistList } from '@/components/library-extras';
+import { SubTabs } from '@/components/dark-ui';
 import { fetchMyLearnings, type MyLearning } from '@/lib/upskill-api';
 
 const LAVENDER = '#C0C4FC';
@@ -13,9 +15,8 @@ function pct(item: MyLearning) {
   return Math.min(100, Math.round(Number(item.progress?.progress_pct || 0)));
 }
 
-export default function MyLearningScreen() {
+function EnrolledCourses() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [items, setItems] = useState<MyLearning[]>([]);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
   const [loading, setLoading] = useState(true);
@@ -43,9 +44,7 @@ export default function MyLearningScreen() {
   });
 
   return (
-    <View className="flex-1 bg-black" style={{ paddingTop: insets.top + 16 }}>
-      <Text className="px-4 text-[28px] font-bold text-white">My courses</Text>
-
+    <View className="flex-1">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -114,6 +113,27 @@ export default function MyLearningScreen() {
           );
         })}
       </ScrollView>
+    </View>
+  );
+}
+
+const SECTIONS = [
+  { key: 'learning', label: 'My learning' },
+  { key: 'wishlist', label: 'My wishlist' },
+  { key: 'certificates', label: 'Certificates' },
+] as const;
+
+export default function MyLearningScreen() {
+  const insets = useSafeAreaInsets();
+  const [section, setSection] = useState<(typeof SECTIONS)[number]['key']>('learning');
+
+  return (
+    <View className="flex-1 bg-black" style={{ paddingTop: insets.top + 16 }}>
+      <Text className="mb-3 px-4 text-[28px] font-bold text-white">My learning</Text>
+      <SubTabs tabs={SECTIONS} value={section} onChange={setSection} />
+      {section === 'learning' ? <EnrolledCourses /> : null}
+      {section === 'wishlist' ? <WishlistList /> : null}
+      {section === 'certificates' ? <CertificatesList /> : null}
     </View>
   );
 }

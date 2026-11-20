@@ -21,6 +21,7 @@ type SessionState = {
   login: (identifier: string) => Promise<{ email: string; maskedEmail: string } | null>;
   verifyLoginCode: (email: string, code: string) => Promise<void>;
   completeLogin: (data: any) => Promise<void>;
+  googleAuth: (idToken: string, intent: 'login' | 'register', mode?: 'student' | 'instructor') => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -88,6 +89,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   verifyLoginCode: async (email, code) => {
     const result = await Api.post<any>('/auth/login/verify', { email, code }, false);
     await get().completeLogin(result?.data || result);
+  },
+
+  googleAuth: async (idToken, intent, mode = 'student') => {
+    const result = await Api.post<any>('/auth/google', { idToken, intent, mode }, false);
+    const data = result?.data?.data || result?.data || result;
+    if (data?.requires_2fa || data?.status === 'requires_2fa') {
+      throw new Error('Two-factor authentication is not supported in the app yet.');
+    }
+    await get().completeLogin(data);
   },
 
   completeLogin: async (data) => {

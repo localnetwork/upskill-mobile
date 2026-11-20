@@ -42,6 +42,7 @@ export default function ProfileScreen() {
   if (!profile) return <Redirect href="/login" />;
 
   const roles = (profile.roles || []).map((role) => String(role).toUpperCase());
+  const isLearnerOnly = !roles.includes('EDUCATOR') && !roles.includes('ADMIN');
   const name = profile.fullName || profile.username || 'Upskill learner';
   const initials = name
     .split(' ')
@@ -82,7 +83,9 @@ export default function ProfileScreen() {
           label="My learning"
           onPress={() => router.navigate('/(tabs)/my-learning' as never)}
         />
-        <Row icon="search" label="Discover courses" onPress={() => router.navigate('/(tabs)/courses' as never)} />
+        {isLearnerOnly ? null : (
+          <Row icon="search" label="Discover courses" onPress={() => router.navigate('/(tabs)/courses' as never)} />
+        )}
         {roles.includes('EDUCATOR') ? (
           <Row icon="graduation-cap" label="Instructor dashboard" onPress={() => router.push('/instructor/dashboard')} />
         ) : null}

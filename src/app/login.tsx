@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { GoogleButton } from "@/components/google-button";
 import { useSessionStore } from "@/store/session";
 
 const ACCENT = "#A435F0";
@@ -13,52 +14,142 @@ const INK = "#F1F2F4";
 function Illustration() {
   const stroke = { borderWidth: 2, borderColor: INK } as const;
   return (
-    <View style={{ height: 170, width: "100%", maxWidth: 360, alignSelf: "center" }}>
+    <View
+      style={{ height: 170, width: "100%", maxWidth: 360, alignSelf: "center" }}
+    >
       <View
-        style={{ position: "absolute", left: 8, top: 66, height: 64, width: 64, borderRadius: 32, backgroundColor: INK, alignItems: "center", justifyContent: "center" }}
+        style={{
+          position: "absolute",
+          left: 8,
+          top: 66,
+          height: 64,
+          width: 64,
+          borderRadius: 32,
+          backgroundColor: INK,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <Text style={{ color: "#000", fontSize: 22, fontWeight: "800" }}>{"</>"}</Text>
+        <Text style={{ color: "#000", fontSize: 22, fontWeight: "800" }}>
+          {"</>"}
+        </Text>
       </View>
       <View
-        style={{ ...stroke, position: "absolute", left: 90, top: 8, height: 44, width: 110, borderRadius: 4, transform: [{ rotate: "-10deg" }], flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}
+        style={{
+          ...stroke,
+          position: "absolute",
+          left: 90,
+          top: 8,
+          height: 44,
+          width: 110,
+          borderRadius: 4,
+          transform: [{ rotate: "-10deg" }],
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+        }}
       >
         <Text style={{ color: INK, fontSize: 18 }}>▲</Text>
         <Text style={{ color: INK, fontSize: 18 }}>●</Text>
         <Text style={{ color: INK, fontSize: 18 }}>◆</Text>
       </View>
       <View
-        style={{ ...stroke, position: "absolute", left: 120, top: 92, height: 58, width: 58, borderRadius: 6, alignItems: "center", justifyContent: "center", transform: [{ rotate: "8deg" }] }}
+        style={{
+          ...stroke,
+          position: "absolute",
+          left: 120,
+          top: 92,
+          height: 58,
+          width: 58,
+          borderRadius: 6,
+          alignItems: "center",
+          justifyContent: "center",
+          transform: [{ rotate: "8deg" }],
+        }}
       >
         <Text style={{ color: INK, fontSize: 24 }}>●</Text>
       </View>
       <View
-        style={{ ...stroke, position: "absolute", left: 214, top: 14, height: 52, width: 84, borderRadius: 4, alignItems: "center", justifyContent: "center", transform: [{ rotate: "12deg" }] }}
+        style={{
+          ...stroke,
+          position: "absolute",
+          left: 214,
+          top: 14,
+          height: 52,
+          width: 84,
+          borderRadius: 4,
+          alignItems: "center",
+          justifyContent: "center",
+          transform: [{ rotate: "12deg" }],
+        }}
       >
         <Text style={{ color: INK, fontSize: 28 }}>✉</Text>
       </View>
       <View
-        style={{ ...stroke, position: "absolute", right: 6, top: 62, height: 70, width: 70, borderRadius: 35, alignItems: "center", justifyContent: "center" }}
+        style={{
+          ...stroke,
+          position: "absolute",
+          right: 6,
+          top: 62,
+          height: 70,
+          width: 70,
+          borderRadius: 35,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <Text style={{ color: INK, fontSize: 30 }}>⊕</Text>
       </View>
       <View
-        style={{ ...stroke, position: "absolute", right: 0, top: 46, height: 22, width: 22, borderRadius: 11, backgroundColor: "#000", alignItems: "center", justifyContent: "center" }}
+        style={{
+          ...stroke,
+          position: "absolute",
+          right: 0,
+          top: 46,
+          height: 22,
+          width: 22,
+          borderRadius: 11,
+          backgroundColor: "#000",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <Text style={{ color: INK, fontSize: 11 }}>文</Text>
       </View>
       <View
-        style={{ position: "absolute", right: 58, top: 122, height: 24, width: 24, borderRadius: 12, backgroundColor: INK, alignItems: "center", justifyContent: "center" }}
+        style={{
+          position: "absolute",
+          right: 58,
+          top: 122,
+          height: 24,
+          width: 24,
+          borderRadius: 12,
+          backgroundColor: INK,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <Text style={{ color: "#000", fontSize: 13, fontWeight: "800" }}>A</Text>
+        <Text style={{ color: "#000", fontSize: 13, fontWeight: "800" }}>
+          A
+        </Text>
       </View>
     </View>
   );
 }
 
-function SocialButton({ children }: { children: React.ReactNode }) {
+function SocialButton({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) {
   return (
     <Pressable
-      style={{ height: 60, width: 60, borderWidth: 1, borderColor: ACCENT, borderRadius: 4, alignItems: "center", justifyContent: "center" }}
+      onPress={onPress}
+      style={{
+        height: 60,
+        width: 60,
+        borderWidth: 1,
+        borderColor: ACCENT,
+        borderRadius: 4,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       {children}
     </Pressable>
@@ -72,6 +163,7 @@ export default function LoginScreen() {
   const initialized = useSessionStore((state) => state.initialized);
   const login = useSessionStore((state) => state.login);
   const verifyLoginCode = useSessionStore((state) => state.verifyLoginCode);
+  const googleAuth = useSessionStore((state) => state.googleAuth);
   const [identifier, setIdentifier] = useState("");
   const [code, setCode] = useState("");
   const [codeTarget, setCodeTarget] = useState<{
@@ -85,6 +177,19 @@ export default function LoginScreen() {
   if (initialized && profile) {
     return <Redirect href="/(tabs)" />;
   }
+
+  const onGoogleToken = async (idToken: string) => {
+    try {
+      setLoading(true);
+      setError("");
+      await googleAuth(idToken, "login", "student");
+      router.replace("/(tabs)");
+    } catch (e: any) {
+      setError(e?.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const submit = async () => {
     try {
@@ -112,7 +217,10 @@ export default function LoginScreen() {
     return (
       <View className="flex-1 bg-black">
         <ScrollView
-          contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}
+          contentContainerStyle={{
+            paddingTop: insets.top + 12,
+            paddingBottom: 40,
+          }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -132,7 +240,15 @@ export default function LoginScreen() {
 
             <View className="mt-10 items-center">
               <View
-                style={{ borderWidth: 2, borderColor: INK, height: 76, width: 76, borderRadius: 38, alignItems: "center", justifyContent: "center" }}
+                style={{
+                  borderWidth: 2,
+                  borderColor: INK,
+                  height: 76,
+                  width: 76,
+                  borderRadius: 38,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Text style={{ color: INK, fontSize: 34 }}>✉</Text>
               </View>
@@ -143,7 +259,9 @@ export default function LoginScreen() {
             </Text>
             <Text className="mt-3 text-center text-[16px] leading-[24px] text-[#B8BCC0]">
               Enter the 6-digit code we sent to{"\n"}
-              <Text className="font-bold text-[#F1F2F4]">{codeTarget.maskedEmail}</Text>
+              <Text className="font-bold text-[#F1F2F4]">
+                {codeTarget.maskedEmail}
+              </Text>
             </Text>
 
             <View className="mt-8" style={{ height: 64 }}>
@@ -163,7 +281,9 @@ export default function LoginScreen() {
                         justifyContent: "center",
                       }}
                     >
-                      <Text style={{ color: INK, fontSize: 26, fontWeight: "700" }}>
+                      <Text
+                        style={{ color: INK, fontSize: 26, fontWeight: "700" }}
+                      >
                         {code[i] ?? ""}
                       </Text>
                     </View>
@@ -179,16 +299,28 @@ export default function LoginScreen() {
                 textContentType="oneTimeCode"
                 autoComplete="one-time-code"
                 caretHidden
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0 }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  opacity: 0,
+                }}
               />
             </View>
 
-            {error ? <Text className="mt-4 text-center text-danger">{error}</Text> : null}
+            {error ? (
+              <Text className="mt-4 text-center text-danger">{error}</Text>
+            ) : null}
 
             <Pressable
               onPress={submit}
               disabled={loading || code.length !== 6}
-              style={{ backgroundColor: ACCENT, opacity: loading || code.length !== 6 ? 0.5 : 1 }}
+              style={{
+                backgroundColor: ACCENT,
+                opacity: loading || code.length !== 6 ? 0.5 : 1,
+              }}
               className="mt-8 h-[60px] items-center justify-center rounded"
             >
               <Text className="text-[17px] font-bold text-white">
@@ -212,7 +344,9 @@ export default function LoginScreen() {
               disabled={loading}
               className="mt-6 items-center"
             >
-              <Text className="text-[15px] font-bold text-[#D6B3FF]">Resend code</Text>
+              <Text className="text-[15px] font-bold text-[#D6B3FF]">
+                Resend code
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -222,7 +356,9 @@ export default function LoginScreen() {
               }}
               className="mt-4 items-center"
             >
-              <Text className="text-[15px] text-[#9194AC]">Use a different email</Text>
+              <Text className="text-[15px] text-[#9194AC]">
+                Use a different email
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -233,7 +369,10 @@ export default function LoginScreen() {
   return (
     <View className="flex-1 bg-black">
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 24, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingTop: insets.top + 24,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -275,26 +414,67 @@ export default function LoginScreen() {
 
           <View className="mt-10 flex-row items-center">
             <View style={{ backgroundColor: BORDER }} className="h-px flex-1" />
-            <Text className="mx-3 text-[15px] text-[#9194AC]">Other log in options</Text>
+            <Text className="mx-3 text-[15px] text-[#9194AC]">
+              Other log in options
+            </Text>
             <View style={{ backgroundColor: BORDER }} className="h-px flex-1" />
           </View>
 
           <View className="mt-8 flex-row items-center justify-center gap-5">
-            <SocialButton>
-              <Text style={{ color: "#EA4335", fontSize: 28, fontWeight: "800" }}>G</Text>
-            </SocialButton>
-            <SocialButton>
-              <View style={{ height: 30, width: 30, borderRadius: 15, backgroundColor: "#1877F2", alignItems: "center", justifyContent: "flex-end", overflow: "hidden" }}>
-                <Text style={{ color: "#fff", fontSize: 28, fontWeight: "800", lineHeight: 32 }}>f</Text>
+            <GoogleButton
+              compact
+              label="Continue with Google"
+              loading={loading}
+              onToken={onGoogleToken}
+              onError={setError}
+            />
+            <SocialButton onPress={() => setError("Facebook login isn't available yet. Use email or Google.")}>
+              <View
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderRadius: 15,
+                  backgroundColor: "#1877F2",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  overflow: "hidden",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 28,
+                    fontWeight: "800",
+                    lineHeight: 32,
+                  }}
+                >
+                  f
+                </Text>
               </View>
             </SocialButton>
-            <SocialButton>
+            <SocialButton onPress={() => setError("Apple login isn't available yet. Use email or Google.")}>
               <FontAwesome name="apple" size={30} color={INK} />
             </SocialButton>
           </View>
 
-          <Pressable onPress={() => router.back()} className="mt-10 items-center">
-            <Text className="text-[14px] text-[#9194AC]">Continue browsing</Text>
+          <View className="mt-10 gap-4">
+            <Pressable onPress={() => router.push("/register?mode=student" as never)} className="items-center">
+              <Text className="text-[15px] text-[#9194AC]">
+                New here? <Text className="font-bold text-[#D6B3FF]">Register</Text>
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => router.push("/register?mode=instructor" as never)} className="items-center">
+              <Text className="text-[15px] font-bold text-[#D6B3FF]">Teach on Upskill</Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            onPress={() => router.back()}
+            className="mt-8 items-center"
+          >
+            <Text className="text-[14px] text-[#9194AC]">
+              Continue browsing
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

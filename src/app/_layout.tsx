@@ -25,11 +25,14 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="login" />
-      <Stack.Screen name="courses/[slug]" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="courses/[slug]/index" />
+      <Stack.Screen name="courses/[slug]/learn" />
       <Stack.Screen name="checkout/index" />
       <Stack.Screen name="checkout/success" />
       <Stack.Screen name="checkout/cancel" />
       <Stack.Screen name="instructor/dashboard" />
+      <Stack.Screen name="instructor/courses/[slug]" />
       <Stack.Screen name="admin/dashboard" />
     </Stack>
   );
